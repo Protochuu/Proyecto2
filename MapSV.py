@@ -4,6 +4,7 @@ class MapSV(Map):
     def __init__(self):
         self.root = None
         self.innerArray = []
+
     def binaryInsert(self, key: str, value: int):
         center = len(self.innerArray) // 2
         centerValue = self.innerArray[center]
@@ -17,12 +18,11 @@ class MapSV(Map):
                 leftIndex = center + 1
                 if rightIndex - leftIndex == 1:
                     self.innerArray.insert(rightIndex, (key, value))
-                    break
             elif centerValue[0] > key:
                 rightIndex = center
                 if rightIndex - leftIndex == 1:
                     self.innerArray.insert(leftIndex, (key, value))
-                    break
+
     def insert(self, key: str, value: int):
         if len(self.innerArray) == 0:
             self.innerArray.append((key,value))
