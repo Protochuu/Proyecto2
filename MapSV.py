@@ -23,7 +23,6 @@ class MapSV(Map):
         center = rightIndex
         self.innerArray.insert(center, (key, value))
 
-
     def binarySearch(self,key : str):
         leftIndex = 0
         rightIndex = len(self.innerArray)
@@ -66,14 +65,3 @@ class MapSV(Map):
 
     def empty(self) -> bool:
         return len(self.innerArray) == 0
-
-if __name__ == "__main__":
-    gatos = MapSV()
-
-    gatos.insert("a", 1)
-    gatos.insert("b", 2)
-    gatos.insert("c", 3)
-    gatos.insert("d", 4)
-    gatos.insert("e", 5)
-
-    print(gatos.innerArray)
