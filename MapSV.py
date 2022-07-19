@@ -23,8 +23,20 @@ class MapSV(Map):
                 if rightIndex - leftIndex == 1:
                     self.innerArray.insert(leftIndex, (key, value))
                     break
-    def binarySearch:
-
+    def binarySearch(self,key : str):
+        center = len(self.innerArray) // 2
+        leftIndex = 0
+        rightIndex = len(self.innerArray)
+        while rightIndex - leftIndex != 1:
+            center = (leftIndex + rightIndex) // 2
+            centerValue = self.innerArray[center]
+            if centerValue[0] == key:
+                return centerValue
+            elif centerValue[0] < key:
+                leftIndex = center + 1
+            elif centerValue[0] > key:
+                rightIndex = center
+        return None
     def insert(self, key: str, value: int):
         if len(self.innerArray) == 0:
             self.innerArray.append((key,value))
@@ -40,3 +52,13 @@ class MapSV(Map):
                 return
         raise KeyError
     def at(self, key: str) -> int:
+        searchResult = self.binarySearch(key)
+        if searchResult is None:
+            raise KeyError
+        else:
+            return searchResult[1]
+    def size(self) -> int:
+        return len(self.innerArray)
+    def empty(self) -> bool:
+        return len(self.innerArray) == 0
+
