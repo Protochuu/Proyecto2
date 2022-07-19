@@ -1,67 +1,70 @@
 from Map import Map
 
+
 class MapSV(Map):
+
     def __init__(self):
+
         self.root = None
-        self.innerArray = []
+        self.inner_array = []
 
-    def binaryInsert(self, key: str, value: int):
-        leftIndex = 0
-        rightIndex = len(self.innerArray)
+    def binary_insert(self, key: str, value: int):
+        left_index = 0
+        right_index = len(self.inner_array)
 
-        while rightIndex - leftIndex != 0:
-            center = (leftIndex + rightIndex) // 2
-            centerValue = self.innerArray[center]
+        while right_index - left_index != 0:
+            center = (left_index + right_index) // 2
+            center_value = self.inner_array[center]
 
-            if centerValue[0] == key:
+            if center_value[0] == key:
                 raise KeyError
-            elif centerValue[0] < key:
-                leftIndex = center + 1
-            elif centerValue[0] > key:
-                rightIndex = center
+            elif center_value[0] < key:
+                left_index = center + 1
+            elif center_value[0] > key:
+                right_index = center
 
-        center = rightIndex
-        self.innerArray.insert(center, (key, value))
+        center = right_index
+        self.inner_array.insert(center, (key, value))
 
-    def binarySearch(self,key : str):
-        leftIndex = 0
-        rightIndex = len(self.innerArray)
-        while rightIndex - leftIndex != 1:
-            center = (leftIndex + rightIndex) // 2
-            centerValue = self.innerArray[center]
-            if centerValue[0] == key:
-                return centerValue
-            elif centerValue[0] < key:
-                leftIndex = center + 1
-            elif centerValue[0] > key:
-                rightIndex = center
+    def binary_search(self, key: str):
+        left_index = 0
+        right_index = len(self.inner_array)
+        while right_index - left_index != 1:
+            center = (left_index + right_index) // 2
+            center_value = self.inner_array[center]
+            if center_value[0] == key:
+                return center_value
+            elif center_value[0] < key:
+                left_index = center + 1
+            elif center_value[0] > key:
+                right_index = center
         return None
 
     def insert(self, key: str, value: int):
-        if len(self.innerArray) == 0:
-            self.innerArray.append((key,value))
+        if len(self.inner_array) == 0:
+            self.inner_array.append((key, value))
         else:
-            self.binaryInsert(key,value)
+            self.binary_insert(key, value)
 
     def erase(self, key: str):
-        if len(self.innerArray) == 0:
+        if len(self.inner_array) == 0:
             raise IndexError
-        for i in range(len(self.innerArray)):
-            element = self.innerArray[i]
+        for i in range(len(self.inner_array)):
+            element = self.inner_array[i]
             if element[0] == key:
-                self.innerArray.remove(element)
+                self.inner_array.remove(element)
                 return
         raise KeyError
 
     def at(self, key: str) -> int:
-        searchResult = self.binarySearch(key)
-        if searchResult is None:
+        search_result = self.binary_search(key)
+        if search_result is None:
             raise KeyError
         else:
-            return searchResult[1]
+            return search_result[1]
 
     def size(self) -> int:
-        return len(self.innerArray)
+        return len(self.inner_array)
 
     def empty(self) -> bool:
-        return len(self.innerArray) == 0
+        return len(self.inner_array) == 0
