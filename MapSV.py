@@ -9,7 +9,7 @@ class MapSV(Map):
         centerValue = self.innerArray[center]
         leftIndex = 0
         rightIndex = len(self.innerArray)
-        while True:
+        while rightIndex - leftIndex != 1:
             center = (leftIndex + rightIndex) // 2
             if centerValue[0] == key:
                 raise KeyError
