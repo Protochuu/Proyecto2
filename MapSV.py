@@ -6,25 +6,25 @@ class MapSV(Map):
         self.innerArray = []
 
     def binaryInsert(self, key: str, value: int):
-        center = len(self.innerArray) // 2
-        centerValue = self.innerArray[center]
         leftIndex = 0
         rightIndex = len(self.innerArray)
-        while rightIndex - leftIndex != 1:
+
+        while rightIndex - leftIndex != 0:
             center = (leftIndex + rightIndex) // 2
+            centerValue = self.innerArray[center]
+
             if centerValue[0] == key:
                 raise KeyError
             elif centerValue[0] < key:
                 leftIndex = center + 1
-                if rightIndex - leftIndex == 1:
-                    self.innerArray.insert(rightIndex, (key, value))
             elif centerValue[0] > key:
                 rightIndex = center
-                if rightIndex - leftIndex == 1:
-                    self.innerArray.insert(leftIndex, (key, value))
+
+        center = rightIndex
+        self.innerArray.insert(center, (key, value))
+
 
     def binarySearch(self,key : str):
-        center = len(self.innerArray) // 2
         leftIndex = 0
         rightIndex = len(self.innerArray)
         while rightIndex - leftIndex != 1:
@@ -43,6 +43,7 @@ class MapSV(Map):
             self.innerArray.append((key,value))
         else:
             self.binaryInsert(key,value)
+
     def erase(self, key: str):
         if len(self.innerArray) == 0:
             raise IndexError
@@ -52,14 +53,27 @@ class MapSV(Map):
                 self.innerArray.remove(element)
                 return
         raise KeyError
+
     def at(self, key: str) -> int:
         searchResult = self.binarySearch(key)
         if searchResult is None:
             raise KeyError
         else:
             return searchResult[1]
+
     def size(self) -> int:
         return len(self.innerArray)
+
     def empty(self) -> bool:
         return len(self.innerArray) == 0
 
+if __name__ == "__main__":
+    gatos = MapSV()
+
+    gatos.insert("a", 1)
+    gatos.insert("b", 2)
+    gatos.insert("c", 3)
+    gatos.insert("d", 4)
+    gatos.insert("e", 5)
+
+    print(gatos.innerArray)
