@@ -1,12 +1,14 @@
 from dataclasses import dataclass, field
 from typing import Tuple, List, Iterator, Optional
 
-from random import randrange, randint, choice
+import matplotlib.pyplot as plt
 
-from itertools import islice
+from random import randrange, randint, choice
 
 from Map import Map
 from MapHash import MapHash
+from MapSV import MapSV
+from MapAVL import MapAVL
 
 import timeit
 
@@ -84,30 +86,6 @@ def profile(map_cls: type = None) -> Results:
 
     results = Results(class_name=map_cls.__name__)
 
-#    for n in n_elements:
-#        logger.info(f'Insertando {n} elementos para {map_cls.__name__}')
-#
-#        timeit_globals = {
-#            'map_cls': map_cls,
-#            'profile_insert': profile_insert,
-#            'strings': strings,
-#            'integers': integers,
-#            'n': n,
-#        }
-#
-#        setup = """
-#from itertools import islice
-#map = map_cls()
-#pairs = islice(zip(strings, integers), n)
-#"""
-#
-#        time = timeit.timeit('profile_insert(map, pairs)',
-#                      setup=setup,
-#                      globals=timeit_globals,
-#                      number=constants.REPS)
-#
-#        results.insert_time_v_n.append(time / constants.REPS)
-
     for n in n_elements:
         logger.info(f'Eliminando {n} elementos para {map_cls.__name__}')
 
@@ -156,11 +134,116 @@ def profile(map_cls: type = None) -> Results:
 
 
 def plot_results(results: List[Results]):
-    pass
+    map_hash = results[0]
+    map_sv = results[1]
+    map_avl = results[2]
+
+    n_elements = [2 ** i for i in range(0, 16)]
+
+    method = 'insert'
+
+    plt.loglog(n_elements, map_hash.insert_time_v_n, label=f'MapHash {method}()')
+    plt.loglog(n_elements, map_sv.insert_time_v_n, label=f'MapSV {method}()')
+    plt.loglog(n_elements, map_avl.insert_time_v_n, label=f'MapAVL {method}()')
+
+    plt.xscale('log', base=2)
+
+    plt.xlabel('Número de elementos (N)')
+    plt.ylabel('Tiempo (s)')
+    plt.title(f'Comparación entre implementaciones, método {method}()')
+
+    plt.legend()
+    plt.savefig(f'{method}.png')
+    plt.close()
+
+    method = 'at'
+
+    plt.loglog(n_elements, map_hash.at_time_v_n, label=f'MapHash {method}()')
+    plt.loglog(n_elements, map_sv.at_time_v_n, label=f'MapSV {method}()')
+    plt.loglog(n_elements, map_avl.at_time_v_n, label=f'MapAVL {method}()')
+
+    plt.xscale('log', base=2)
+
+    plt.xlabel('Número de elementos (N)')
+    plt.ylabel('Tiempo (s)')
+    plt.title(f'Comparación entre implementaciones, método {method}()')
+
+    plt.legend()
+    plt.savefig(f'{method}.png')
+    plt.close()
+
+    method = 'erase'
+
+    plt.loglog(n_elements, map_hash.erase_time_v_n, label=f'MapHash {method}()')
+    plt.loglog(n_elements, map_sv.erase_time_v_n, label=f'MapSV {method}()')
+    plt.loglog(n_elements, map_avl.erase_time_v_n, label=f'MapAVL {method}()')
+
+    plt.xscale('log', base=2)
+
+    plt.xlabel('Número de elementos (N)')
+    plt.ylabel('Tiempo (s)')
+    plt.title(f'Comparación entre implementaciones, método {method}()')
+
+    plt.legend()
+    plt.savefig(f'{method}.png')
+    plt.close()
+
+
+def results_to_latex(results: List[Results]):
+    map_hash = results[0]
+    map_sv = results[1]
+    map_avl = results[2]
+
+    exps = [i for i in range(0, 16)]
+
+    method = 'insert'
+
+    text = ''
+
+    for i, map_hash_data, map_sv_data, map_avl_data in zip(exps,
+                                                           map_hash.insert_time_v_n,
+                                                           map_sv.insert_time_v_n,
+                                                           map_avl.insert_time_v_n):
+
+        text += f'2^{i} \\, Elementos&{map_hash_data} \, \\text{{s}}&{map_sv_data} \, \\text{{s}}&{map_avl_data} \, \\text{{s}}\\\\'
+
+    with open(f'{method}.txt', 'w') as f:
+        f.write(text)
+
+    method = 'at'
+
+    text = ''
+
+    for i, map_hash_data, map_sv_data, map_avl_data in zip(exps,
+                                                           map_hash.at_time_v_n,
+                                                           map_sv.at_time_v_n,
+                                                           map_avl.at_time_v_n):
+
+        text += f'2^{i} \\, Elementos&{map_hash_data} \, \\text{{s}}&{map_sv_data} \, \\text{{s}}&{map_avl_data} \, \\text{{s}}\\\\'
+
+    with open(f'{method}.txt', 'w') as f:
+        f.write(text)
+
+    method = 'erase'
+
+    text = ''
+
+    for i, map_hash_data, map_sv_data, map_avl_data in zip(exps,
+                                                           map_hash.erase_time_v_n,
+                                                           map_sv.erase_time_v_n,
+                                                           map_avl.erase_time_v_n):
+
+        text += f'2^{i} \\, Elementos&{map_hash_data} \, \\text{{s}}&{map_sv_data} \, \\text{{s}}&{map_avl_data} \, \\text{{s}}\\\\'
+
+    with open(f'{method}.txt', 'w') as f:
+        f.write(text)
 
 
 if __name__ == '__main__':
     results: List[Results] = []
 
-    for map_cls in (MapHash, ):
+    for map_cls in (MapHash, MapSV, MapAVL):
         results.append(profile(map_cls))
+
+    plot_results(results)
+    results_to_latex(results)

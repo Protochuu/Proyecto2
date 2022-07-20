@@ -44,8 +44,6 @@ class Bucket:
 
 class MapHash(Map):
     def __init__(self):
-        logger.debug('Se llamó al constructor de MapHash')
-
         self.prime_index: int = 1
 
         self.array_size: int = primes[self.prime_index]
@@ -54,26 +52,27 @@ class MapHash(Map):
         self.buckets_no: int = 0
 
     def _should_rehash(self, bucket: Bucket):
-        return not self._can_insert(bucket)
+        return bucket.key != ''
 
     @staticmethod
     def _can_insert(bucket: Bucket):
-        return bucket.is_empty() or bucket.is_available()
+        return bucket.is_empty() and bucket.is_available()
 
     def _reallocate(self):
         to_rehash: List[Bucket] = [bucket for bucket in self.inner_array if self._should_rehash(bucket)]
 
         self.prime_index += 1
         self.array_size = primes[self.prime_index]
+
         self.inner_array = [Bucket() for _ in range(self.array_size)]
 
         for bucket in to_rehash:
             for j, _ in enumerate(self.inner_array):
                 hashed_key = self._hash(bucket.key, j)
-                bucket = self.inner_array[hashed_key]
+                insertion_cell = self.inner_array[hashed_key]
 
-                if self._can_insert(bucket):
-                    self.array_size[hashed_key] = bucket
+                if self._can_insert(insertion_cell):
+                    self.inner_array[hashed_key] = bucket
                     break
 
     def insert(self, key: str, value: int):
@@ -89,10 +88,11 @@ class MapHash(Map):
             if self._can_insert(bucket):
                 bucket.set_key_value(key, value)
                 self.buckets_no += 1
+
                 break
 
     def _hash(self, key: str, j: int) -> int:
-        return self._primary_hash(key) + (j * self._secondary_hash(key) % self.array_size)
+        return (self._primary_hash(key) + (j * self._secondary_hash(key))) % self.array_size
 
     def _primary_hash(self, key: str) -> int:
         p = 0
@@ -144,3 +144,32 @@ class MapHash(Map):
 
     def size(self) -> int:
         return self.buckets_no
+
+if __name__ == "__main__":
+    map = MapHash()
+    map.insert('papa', 2)
+    print("inner_array", map.inner_array)
+    map.insert('pepe', 3)
+    print("inner_array", map.inner_array)
+    map.insert('aaaaa', 349289)
+    print("inner_array", map.inner_array)
+    map.insert('abaaa', 12341231)
+    map.insert('aabaa', 23138123781)
+
+    print(map.inner_array)
+    print(map.at('pepe'))
+    print(map.at('aabaa'))
+    print(map.at('abaaa'))
+    print(map.at('aaaaa'))
+
+    map.erase('pepe')
+
+    try:
+        print(map.at('pepe'))
+    except KeyError:
+        print('hubo error')
+
+    try:
+        print(map.at('akira'))
+    except KeyError:
+        print('hubo error')

@@ -38,17 +38,21 @@ class AVLNode:
 class MapAVL(Map):
     def __init__(self):
         self.root: Optional[AVLNode] = None
+        self._size = 0
 
     def find_insertion_node(self, node: AVLNode, key_to_insert: str) -> AVLNode:
         if node.key == key_to_insert:
             raise KeyError('Llave ya insertada.')
 
-        if not node.has_children:
-            return node
-
         if node.key < key_to_insert:
+            if node.right_child is None:
+                return node
+
             return self.find_insertion_node(node.right_child, key_to_insert)
         else:
+            if node.left_child is None:
+                return node
+
             return self.find_insertion_node(node.left_child, key_to_insert)
 
     def rotate_left(self, node_to_balance: AVLNode):
@@ -160,17 +164,16 @@ class MapAVL(Map):
 
             self.update_subtrees_from_insertion(new_node)
 
+        self._size += 1
+
     def find_erase_node(self, node: AVLNode, key_to_insert: str) -> AVLNode:
         if node.key == key_to_insert:
-            raise KeyError('Llave ya insertada.')
-
-        if not node.has_children:
             return node
 
         if node.key < key_to_insert:
-            return self.find_insertion_node(node.right_child, key_to_insert)
+            return self.find_erase_node(node.right_child, key_to_insert)
         else:
-            return self.find_insertion_node(node.left_child, key_to_insert)
+            return self.find_erase_node(node.left_child, key_to_insert)
 
     @staticmethod
     def _delete_node( node: AVLNode):
@@ -224,10 +227,15 @@ class MapAVL(Map):
         if current_node is not None:
             self.rebalance_from(current_node)
 
+        self._size += 1
+
     #TODO: LISTO
     def search_node(self, node: AVLNode, key: str) -> Optional[AVLNode]:
         if node is None:
             return None
+
+        if node.key == key:
+            return node
 
         if node.key < key:
             return self.search_node(node.right_child, key)
@@ -236,10 +244,35 @@ class MapAVL(Map):
 
     #TODO: LISTO
     def at(self, key: str) -> int:
-        if result := self.search_node(self.root, key):
+        result = self.search_node(self.root, key)
+
+        if result:
             return result.value
         else:
-            raise KeyError
+            raise KeyError("Llave no encontrada")
+
+    def size(self):
+        return self._size
+
+    def empty(self):
+        return self._size == 0
 
     def print(self):
         pass
+
+
+if __name__ == "__main__":
+    map = MapAVL()
+    map.insert('papa', 2)
+    map.insert('pepe', 3)
+    map.insert('aaaaa', 349289)
+    map.insert('abaaa', 12341231)
+    map.insert('aabaa', 23138123781)
+
+    print(map.at('pepe'))
+    print(map.at('aabaa'))
+    print(map.at('abaaa'))
+    print(map.at('aaaaa'))
+
+    map.erase('pepe')
+    print(map.at('pepe'))
