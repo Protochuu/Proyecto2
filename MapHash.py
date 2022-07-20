@@ -8,6 +8,7 @@ from primes import primes
 
 from loguru import logger
 
+
 @dataclass(frozen=True)
 class constants:
     ALPHA_TOL: float = 0.5
@@ -48,7 +49,7 @@ class MapHash(Map):
         self.prime_index: int = 1
 
         self.array_size: int = primes[self.prime_index]
-        self.array: List[Bucket] = [Bucket() for _ in range(self.array_size)]
+        self.inner_array: List[Bucket] = [Bucket() for _ in range(self.array_size)]
 
         self.buckets_no: int = 0
 
@@ -60,16 +61,16 @@ class MapHash(Map):
         return bucket.is_empty() or bucket.is_available()
 
     def _reallocate(self):
-        to_rehash: List[Bucket] = [bucket for bucket in self.array if self._should_rehash(bucket)]
+        to_rehash: List[Bucket] = [bucket for bucket in self.inner_array if self._should_rehash(bucket)]
 
         self.prime_index += 1
         self.array_size = primes[self.prime_index]
-        self.array = [Bucket() for _ in range(self.array_size)]
+        self.inner_array = [Bucket() for _ in range(self.array_size)]
 
         for bucket in to_rehash:
-            for j, _ in enumerate(self.array):
+            for j, _ in enumerate(self.inner_array):
                 hashed_key = self._hash(bucket.key, j)
-                bucket = self.array[hashed_key]
+                bucket = self.inner_array[hashed_key]
 
                 if self._can_insert(bucket):
                     self.array_size[hashed_key] = bucket
@@ -79,8 +80,8 @@ class MapHash(Map):
         if self.alpha > constants.ALPHA_TOL:
             self._reallocate()
 
-        for j, _ in enumerate(self.array):
-            bucket = self.array[self._hash(key, j)]
+        for j, _ in enumerate(self.inner_array):
+            bucket = self.inner_array[self._hash(key, j)]
 
             if ( not bucket.is_empty() ) and (bucket.key == key):
                 raise KeyError("Llave ya insertada.")
@@ -88,7 +89,6 @@ class MapHash(Map):
             if self._can_insert(bucket):
                 bucket.set_key_value(key, value)
                 self.buckets_no += 1
-
                 break
 
     def _hash(self, key: str, j: int) -> int:
@@ -119,8 +119,8 @@ class MapHash(Map):
         return self.buckets_no / self.array_size
 
     def erase(self, key: str):
-        for j, _ in enumerate(self.array):
-            bucket = self.array[self._hash(key, j)]
+        for j, _ in enumerate(self.inner_array):
+            bucket = self.inner_array[self._hash(key, j)]
 
             if bucket.key == key:
                 bucket.remove()
@@ -131,8 +131,8 @@ class MapHash(Map):
                 raise KeyError("Llave no encontrada")
 
     def at(self, key: str) -> int:
-        for j, _ in enumerate(self.array):
-            bucket = self.array[self._hash(key, j)]
+        for j, _ in enumerate(self.inner_array):
+            bucket = self.inner_array[self._hash(key, j)]
 
             if bucket.key == key:
                 return bucket.value

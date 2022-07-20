@@ -3,7 +3,6 @@ from Map import Map
 
 class MapSV(Map):
     def __init__(self):
-
         self.inner_list = []
 
     def binary_insert(self, key: str, value: int):
