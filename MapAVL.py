@@ -35,7 +35,6 @@ class AVLNode:
             raise AttributeError
 
 
-
 class MapAVL(Map):
     def __init__(self):
         self.root: Optional[AVLNode] = None
