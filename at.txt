@@ -1,0 +1,12 @@
+2^{0} \, Elementos&4.38E-06 \, \text{s}&7.76E-07 \, \text{s}&5.35E-07 \, \text{s}\\ 
+2^{1} \, Elementos&8.47E-06 \, \text{s}&1.72E-06 \, \text{s}&1.44E-06 \, \text{s}\\ 
+2^{2} \, Elementos&2.66E-05 \, \text{s}&3.55E-06 \, \text{s}&3.09E-06 \, \text{s}\\ 
+2^{3} \, Elementos&4.07E-05 \, \text{s}&9.05E-06 \, \text{s}&7.28E-06 \, \text{s}\\ 
+2^{4} \, Elementos&7.26E-05 \, \text{s}&2.12E-05 \, \text{s}&2.15E-05 \, \text{s}\\ 
+2^{5} \, Elementos&2.05E-04 \, \text{s}&5.15E-05 \, \text{s}&5.66E-05 \, \text{s}\\ 
+2^{6} \, Elementos&3.22E-04 \, \text{s}&1.24E-04 \, \text{s}&1.37E-04 \, \text{s}\\ 
+2^{7} \, Elementos&6.82E-04 \, \text{s}&2.86E-04 \, \text{s}&3.37E-04 \, \text{s}\\ 
+2^{8} \, Elementos&1.68E-03 \, \text{s}&6.60E-04 \, \text{s}&7.39E-04 \, \text{s}\\ 
+2^{9} \, Elementos&3.37E-03 \, \text{s}&1.69E-03 \, \text{s}&1.65E-03 \, \text{s}\\ 
+2^{10} \, Elementos&6.93E-03 \, \text{s}&3.74E-03 \, \text{s}&3.70E-03 \, \text{s}\\ 
+2^{11} \, Elementos&1.36E-02 \, \text{s}&8.27E-03 \, \text{s}&8.45E-03 \, \text{s}\\ 

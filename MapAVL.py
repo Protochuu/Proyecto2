@@ -13,7 +13,7 @@ class AVLNode:
     left_child: Optional['AVLNode'] = None
     right_child: Optional['AVLNode'] = None
 
-    subtree_height: int = 0
+    subtree_height: int = 1
 
     @property
     def has_children(self):
@@ -33,6 +33,14 @@ class AVLNode:
             return self.left_child if self.left_child is not None else self.right_child
         else:
             raise AttributeError
+
+    @property
+    def left_child_height(self):
+        return 0 if self.left_child is None else self.left_child.subtree_height
+
+    @property
+    def right_child_height(self):
+        return 0 if self.right_child is None else self.right_child.subtree_height
 
 
 class MapAVL(Map):
@@ -56,14 +64,15 @@ class MapAVL(Map):
             return self.find_insertion_node(node.left_child, key_to_insert)
 
     def rotate_left(self, node_to_balance: AVLNode):
+        print(node_to_balance, node_to_balance.right_child, node_to_balance.right_child)
         right_child = node_to_balance.right_child
         node_to_balance.right_child = right_child.left_child
 
-        node_to_balance.subtree_height = 1 + max(node_to_balance.right_child.subtree_height,
-                                                 node_to_balance.left_child.subtree_height)
+        node_to_balance.subtree_height = 1 + max(node_to_balance.right_child_height,
+                                                 node_to_balance.left_child_height)
 
-        right_child.subtree_height = 1 + max(node_to_balance.right_child.subtree_height,
-                                             node_to_balance.left_child.subtree_height)
+        right_child.subtree_height = 1 + max(node_to_balance.right_child_height,
+                                            node_to_balance.left_child_height)
 
         if node_to_balance.parent is None:
             right_child.parent = None
@@ -78,14 +87,13 @@ class MapAVL(Map):
 
     def rotate_right(self, node_to_balance: AVLNode):
         left_child = node_to_balance.left_child
+        node_to_balance.left_child = left_child.right_child
 
-        node_to_balance.right_child = left_child.right_child
+        node_to_balance.subtree_height = 1 + max(node_to_balance.right_child_height,
+                                                 node_to_balance.left_child_height)
 
-        node_to_balance.subtree_height = 1 + max(node_to_balance.right_child.subtree_height,
-                                                 node_to_balance.left_child.subtree_height)
-
-        left_child.subtree_height = 1 + max(node_to_balance.right_child.subtree_height,
-                                             node_to_balance.left_child.subtree_height)
+        left_child.subtree_height = 1 + max(node_to_balance.right_child_height,
+                                            node_to_balance.left_child_height)
 
         if node_to_balance.parent is None:
             left_child.parent = None
@@ -129,13 +137,12 @@ class MapAVL(Map):
             if middle_child.key > right_child.key:
                 self.rotate_left(node)
             else:
-                self.rotate_left_right(node)
+                self.rotate_right_left(node)
 
     def update_subtrees_from_insertion(self, node: AVLNode):
         self.rebalance_from(node)
 
         parent_node = node.parent
-        parent_node.subtree_height += 1
 
         if parent_node is self.root:
             return
@@ -171,8 +178,14 @@ class MapAVL(Map):
             return node
 
         if node.key < key_to_insert:
+            if node.right_child is None:
+                return node
+
             return self.find_erase_node(node.right_child, key_to_insert)
         else:
+            if node.left_child is None:
+                return node
+
             return self.find_erase_node(node.left_child, key_to_insert)
 
     @staticmethod
@@ -188,17 +201,21 @@ class MapAVL(Map):
         del node
 
     def find_successor(self, node: AVLNode, _root: bool = True) -> AVLNode:
-        if not node.has_children:
-            return node
+        if not _root:
+            if node.left_child is None:
+                return node
 
-        if _root:
-            self.find_successor(node.left_child, False)
+            return self.find_successor(node.left_child, False)
         else:
-            self.find_successor(node.right_child, False)
+            return self.find_successor(node.right_child, False)
 
     def erase(self, key: str):
         node_to_erase = self.find_erase_node(self.root, key)
         current_node = None
+
+        if node_to_erase is self.root:
+            self.root = None
+            return
 
         if node_to_erase.is_leaf:
             self._delete_node(node_to_erase)
@@ -229,7 +246,6 @@ class MapAVL(Map):
 
         self._size += 1
 
-    #TODO: LISTO
     def search_node(self, node: AVLNode, key: str) -> Optional[AVLNode]:
         if node is None:
             return None
@@ -242,7 +258,6 @@ class MapAVL(Map):
         else:
             return self.search_node(node.left_child, key)
 
-    #TODO: LISTO
     def at(self, key: str) -> int:
         result = self.search_node(self.root, key)
 
@@ -257,8 +272,16 @@ class MapAVL(Map):
     def empty(self):
         return self._size == 0
 
-    def print(self):
-        pass
+    def print(self, node: AVLNode, level=0):
+        print(' ' * level, node.key)
+        level += 1
+
+        if node.left_child:
+            self.print(node.left_child, level)
+
+        if node.right_child:
+            self.print(node.right_child, level)
+
 
 
 if __name__ == "__main__":

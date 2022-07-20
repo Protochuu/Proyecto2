@@ -62,7 +62,7 @@ class MapSV(Map):
         if removeIndex is None:
             raise KeyError("Llave no encontrada")
         else:
-            del self.inner_list[removeIndex]
+            self.inner_list.pop(removeIndex)
 
     def at(self, key: str) -> int:
         search_result = self.binary_search(key)
@@ -78,20 +78,23 @@ class MapSV(Map):
     def empty(self) -> bool:
         return len(self.inner_list) == 0
 
+
 if __name__ == "__main__":
     map = MapSV()
     map.insert('ababa', 1)
-    map.insert('ebee', 2)
-    map.insert('pepe', 3)
-    map.insert('aaaaa', 349289)
-    map.insert('abaaa', 12341231)
-    map.insert('aabaa', 23138123781)
+    map.erase('ababa')
 
-    print(map.at('pepe'))
-    print(map.at('aabaa'))
-    print(map.at('abaaa'))
-    print(map.at('aaaaa'))
+    # map.insert('ebee', 2)
+    # map.insert('pepe', 3)
+    # map.insert('aaaaa', 349289)
+    # map.insert('abaaa', 12341231)
+    # map.insert('aabaa', 23138123781)
 
-    map.insert('wawa', 1313)
-    map.erase('wawa')
-    print(map.at('wawa'))
+    # print(map.at('pepe'))
+    # print(map.at('aabaa'))
+    # print(map.at('abaaa'))
+    # print(map.at('aaaaa'))
+
+    # map.insert('wawa', 1313)
+    # map.erase('wawa')
+    # print(map.at('wawa'))

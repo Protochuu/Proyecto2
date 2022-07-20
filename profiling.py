@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from itertools import islice
 from typing import Tuple, List, Iterator, Optional
 
 import matplotlib.pyplot as plt
@@ -19,7 +20,7 @@ from loguru import logger
 class constants:
     CHAR_RANGE: Tuple[int, int]= (32, 125)
     STRING_LENGTH: int = 10
-    KEY_VALUE_PAIR_COUNT: int = 2 ** 16
+    KEY_VALUE_PAIR_COUNT: int = 2 ** 12
     KEY_MAX_INT: int = 1024
     REPS: int = 100
 
@@ -58,16 +59,16 @@ def profile_insert(map: Map, pairs: Iterator[Tuple[str, int]]):
 
 def profile_erase(map: Map, keys: Iterator[str]):
     for key in keys:
-        logger.info(key)
         try:
             map.erase(key)
         except KeyError:
-            logger.error('Clave no encontrada.')
+            pass
 
 
 def profile_at(map: Map, keys: Iterator[str]):
     for key in keys:
         map.at(key)
+
 
 @dataclass
 class Results:
@@ -82,53 +83,103 @@ def profile(map_cls: type = None) -> Results:
     strings = generate_random_keys()
     integers = generate_random_values()
 
-    n_elements = [2 ** i for i in range(0, 16)]
+    n_elements = [2 ** i for i in range(0, 12)]
 
     results = Results(class_name=map_cls.__name__)
 
     for n in n_elements:
         logger.info(f'Eliminando {n} elementos para {map_cls.__name__}')
 
-        map = map_cls()
+        timeit_globals = {
+            'map_cls': map_cls,
+            'profile_erase': profile_erase,
+            'strings': strings,
+            'integers': integers,
+            'n': n,
+        }
 
-        for key, value in zip(strings, integers):
-            map.insert(key, value)
+        setup = """
+from itertools import islice
+from random import choice
 
-        logger.info('here1')
+map = map_cls()
 
-        random_keys = []
+for key, value in islice(zip(strings, integers), n + 1):
+    map.insert(key, value)
+    
+slice = list(islice(strings, n))
 
-        for _ in range(n):
-            random_keys.append(choice(strings))
+random_keys = []
 
-        logger.info('here2')
+for _ in range(n):
+    random_keys.append(choice(slice))
+"""
 
-        random_keys = tuple(random_keys)
-
-        time = timeit.timeit(lambda: profile_erase(map, random_keys),
+        time = timeit.timeit('profile_erase(map, random_keys)',
+                             setup=setup,
+                             globals=timeit_globals,
                              number=constants.REPS)
 
         results.erase_time_v_n.append(time / constants.REPS)
 
     for n in n_elements:
-        logger.info(f'Obteniendo {n} elementos para {map_cls.__name__}')
+        logger.info(f'Insertando {n} elementos para {map_cls.__name__}')
 
-        map = map_cls()
+        timeit_globals = {
+            'map_cls': map_cls,
+            'profile_insert': profile_insert,
+            'strings': strings,
+            'integers': integers,
+            'n': n,
+        }
 
-        for key, value in zip(strings, integers):
-            map.insert(key, value)
+        setup = """
+from itertools import islice
+map = map_cls()
+pairs = islice(zip(strings, integers), n)
+"""
 
-        random_keys = []
-
-        for _ in range(n):
-            random_keys.append(choice())
-
-        random_keys = tuple(random_keys)
-
-        time = timeit.timeit(lambda: profile_at(map, random_keys),
+        time = timeit.timeit('profile_insert(map, pairs)',
+                      setup=setup,
+                      globals=timeit_globals,
                       number=constants.REPS)
 
-        results.erase_time_v_n.append(time / constants.REPS)
+        results.insert_time_v_n.append(time / constants.REPS)
+
+    for n in n_elements:
+        logger.info(f'Obteniendo {n} elementos para {map_cls.__name__}')
+
+        timeit_globals = {
+            'map_cls': map_cls,
+            'profile_at': profile_at,
+            'strings': strings,
+            'integers': integers,
+            'n': n,
+        }
+
+        setup = """
+from itertools import islice
+from random import choice
+
+map = map_cls()
+
+for key, value in islice(zip(strings, integers), n):
+    map.insert(key, value)
+
+slice = list(islice(strings, n))
+
+random_keys = []
+
+for _ in range(n):
+    random_keys.append(choice(slice))
+"""
+
+        time = timeit.timeit('profile_at(map, random_keys)',
+                             setup=setup,
+                             globals=timeit_globals,
+                             number=constants.REPS)
+
+        results.at_time_v_n.append(time / constants.REPS)
 
     return results
 
@@ -138,7 +189,7 @@ def plot_results(results: List[Results]):
     map_sv = results[1]
     map_avl = results[2]
 
-    n_elements = [2 ** i for i in range(0, 16)]
+    n_elements = [2 ** i for i in range(0, 12)]
 
     method = 'insert'
 
@@ -194,7 +245,7 @@ def results_to_latex(results: List[Results]):
     map_sv = results[1]
     map_avl = results[2]
 
-    exps = [i for i in range(0, 16)]
+    exps = [i for i in range(0, 12)]
 
     method = 'insert'
 
@@ -205,10 +256,10 @@ def results_to_latex(results: List[Results]):
                                                            map_sv.insert_time_v_n,
                                                            map_avl.insert_time_v_n):
 
-        text += f'2^{i} \\, Elementos&{map_hash_data} \, \\text{{s}}&{map_sv_data} \, \\text{{s}}&{map_avl_data} \, \\text{{s}}\\\\'
+        text += f'2^{{{i}}} \\, Elementos&{map_hash_data:.2E} \\, \\text{{s}}&{map_sv_data:.2E} \\, \\text{{s}}&{map_avl_data:.2E} \\, \\text{{s}}\\\\ \n'
 
-    with open(f'{method}.txt', 'w') as f:
-        f.write(text)
+    with open(f'{method}.txt', 'wb') as f:
+        f.write(bytearray(text, 'ascii'))
 
     method = 'at'
 
@@ -219,10 +270,10 @@ def results_to_latex(results: List[Results]):
                                                            map_sv.at_time_v_n,
                                                            map_avl.at_time_v_n):
 
-        text += f'2^{i} \\, Elementos&{map_hash_data} \, \\text{{s}}&{map_sv_data} \, \\text{{s}}&{map_avl_data} \, \\text{{s}}\\\\'
+        text += f'2^{{{i}}} \\, Elementos&{map_hash_data:.2E} \\, \\text{{s}}&{map_sv_data:.2E} \\, \\text{{s}}&{map_avl_data:.2E} \\, \\text{{s}}\\\\ \n'
 
-    with open(f'{method}.txt', 'w') as f:
-        f.write(text)
+    with open(f'{method}.txt', 'wb') as f:
+        f.write(bytearray(text, 'ascii'))
 
     method = 'erase'
 
@@ -233,10 +284,10 @@ def results_to_latex(results: List[Results]):
                                                            map_sv.erase_time_v_n,
                                                            map_avl.erase_time_v_n):
 
-        text += f'2^{i} \\, Elementos&{map_hash_data} \, \\text{{s}}&{map_sv_data} \, \\text{{s}}&{map_avl_data} \, \\text{{s}}\\\\'
+        text += f'2^{{{i}}} \\, Elementos&{map_hash_data:.2E} \\, \\text{{s}}&{map_sv_data:.2E} \\, \\text{{s}}&{map_avl_data:.2E} \\, \\text{{s}}\\\\ \n'
 
-    with open(f'{method}.txt', 'w') as f:
-        f.write(text)
+    with open(f'{method}.txt', 'wb') as f:
+        f.write(bytearray(text, 'ascii'))
 
 
 if __name__ == '__main__':

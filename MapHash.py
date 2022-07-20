@@ -11,7 +11,7 @@ from loguru import logger
 
 @dataclass(frozen=True)
 class constants:
-    ALPHA_TOL: float = 0.5
+    ALPHA_TOL: float = 0.6
     PRIMARY_HASH_Z: int = 33
 
 
@@ -44,7 +44,7 @@ class Bucket:
 
 class MapHash(Map):
     def __init__(self):
-        self.prime_index: int = 1
+        self.prime_index: int = 10
 
         self.array_size: int = primes[self.prime_index]
         self.inner_array: List[Bucket] = [Bucket() for _ in range(self.array_size)]
@@ -61,7 +61,7 @@ class MapHash(Map):
     def _reallocate(self):
         to_rehash: List[Bucket] = [bucket for bucket in self.inner_array if self._should_rehash(bucket)]
 
-        self.prime_index += 1
+        self.prime_index += 10
         self.array_size = primes[self.prime_index]
 
         self.inner_array = [Bucket() for _ in range(self.array_size)]
@@ -94,15 +94,24 @@ class MapHash(Map):
     def _hash(self, key: str, j: int) -> int:
         return (self._primary_hash(key) + (j * self._secondary_hash(key))) % self.array_size
 
+#    def _primary_hash(self, key: str) -> int:
+#        p = 0
+#        exp = 0
+#
+#        for i, character in enumerate(key):
+#            p += ord(character) * (constants.PRIMARY_HASH_Z ** exp)
+#            exp += 1
+#
+#        return p % self.array_size
+
     def _primary_hash(self, key: str) -> int:
-        p = 0
-        exp = 0
+        h = 0
+        a = 127
 
-        for character in key:
-            p += ord(character) * (constants.PRIMARY_HASH_Z ** exp)
-            exp += 1
+        for i, character in enumerate(key):
+            h = (a * h + ord(character)) % self.array_size
 
-        return p % self.array_size
+        return h
 
     def _secondary_hash(self, key: str) -> int:
         sum = 0
