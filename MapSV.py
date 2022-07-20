@@ -14,7 +14,7 @@ class MapSV(Map):
             center_value = self.inner_list[center]
 
             if center_value[0] == key:
-                raise KeyError
+                raise KeyError("Llave ya existente")
             elif center_value[0] < key:
                 left_index = center + 1
             elif center_value[0] > key:
@@ -46,18 +46,18 @@ class MapSV(Map):
 
     def erase(self, key: str):
         if len(self.inner_list) == 0:
-            raise IndexError
+            raise IndexError("No hay elementos por eliminar")
         for i in range(len(self.inner_list)):
             element = self.inner_list[i]
             if element[0] == key:
                 self.inner_list.remove(element)
                 return
-        raise KeyError
+        raise KeyError("Llave no encontrada")
 
     def at(self, key: str) -> int:
         search_result = self.binary_search(key)
         if search_result is None:
-            raise KeyError
+            raise KeyError("Llave no encontrada")
         else:
             return search_result[1]
 
